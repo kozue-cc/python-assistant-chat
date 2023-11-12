@@ -20,11 +20,11 @@ def renew_message():
 
     # assistantの作成
     assistant = client.beta.assistants.create(
-        instructions="You are a personal math tutor. When asked a question, write and run Python code to answer the question.",
-        name="Math Tutor",
+        instructions="あなたは日本文学の研究者です。ユーザーからアップロードされるファイルの内容をもとに、質問に回答してください。",
+        name="文学研究者Chat",
         tools=[{"type": "code_interpreter"}],
-        model="gpt-4",
-    )
+        model="gpt-3.5-turbo-1106",
+    )   
     print(assistant)
 
     return jsonify({'message': 'renewed', 'assistant_id': assistant.id})
@@ -89,7 +89,7 @@ def get_ai_response(user_input, file_id):
     run = client.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant_id,
-        instructions="Please address the user as Mr.Tree. The user has a premium account."
+        instructions="日本語で回答してください。"
     )
     print(run)
 
@@ -102,7 +102,7 @@ def get_ai_response(user_input, file_id):
         )
         print(result)
         status = result.status
-        sleep(1)
+        sleep(20)
 
     print(result)
     
