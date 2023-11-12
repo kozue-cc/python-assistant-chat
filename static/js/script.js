@@ -49,7 +49,7 @@ function addMessageToChatBox(sender, message) {
     const chatBox = document.getElementById('chat-box');
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
-    messageElement.textContent = `${sender}: ${message}`;
+    messageElement.innerHTML = sender + ":" + message;
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
