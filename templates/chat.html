@@ -7,17 +7,58 @@
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
-    <div id="chat-container">
-        <button id="renew-btn">新しい会話を始める</button>
-        <div id="chat-box">
-            <!-- ここにメッセージが表示される -->
+    <div id="sidemenu">
+        <h1>Chat App</h1>
+        <div id="history-list">
+            <!-- ここにチャット履歴が表示される -->
+            History
+            <ul>
+                <li><a href="/">履歴1-1</a></li>
+                <li>履歴1-2</li>
+                <li>履歴1-3</li>
+            </ul>
         </div>
-        <textarea id="chat-input" placeholder="メッセージを入力..."></textarea>
-        <div id="send-box">
-            <label for="file-btn">
-                <input type="file" name="file" id="file-input">
-            </label>
-            <button id="send-btn">送信</button>
+        <p>ユーザー名: <span id="username"></span></p>
+    </div>
+    <div id="chat-container">
+        <div id="assistant-info">
+            <h2 class="title-h2">Assistant Information</h2>
+            <div class="column">
+                <div class="title">Name:</div>
+                <div class="content">
+                    <input type="text" id="model">
+                </div>
+            </div>
+            <div class="column">
+                <div class="title">Instructions:</div> 
+                <div class="content">
+                    <textarea name="instructions" id="instructions"placeholder="初期設定を記載してください。"></textarea>
+                </div>
+            </div>
+            <div class="column">
+                <div class="title">Model:</div>
+                <div class="content">
+                    <select name="model-name" id="model-name">
+                        <option value="gpt-3.5-turbo-1106">GPT-3.5-turbo-1106</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-4-turbo">GPT-4-turbo</option>
+                        <option value="gpt-4-preview">GPT-4-preview</option>
+                    </select>
+                </div>
+            </div>
+            <button id="renew-btn">新しいアシスタントと話す</button>
+        </div>
+        <div id="chat">
+            <div id="chat-box">
+                <!-- ここにメッセージが表示される -->
+            </div>
+            <textarea id="chat-input" placeholder="メッセージを入力..."></textarea>
+            <div id="send-box">
+                <label for="file-input">
+                    <input type="file" name="file" id="file-input">
+                </label>
+                <button id="send-btn">送信</button>
+            </div>
         </div>
     </div>
     <script src="/static/js/script.js"></script>
