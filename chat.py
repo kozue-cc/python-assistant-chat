@@ -1,10 +1,13 @@
 from time import sleep
 from flask import Flask, render_template, request, jsonify
-import openai
+from openai import OpenAI
+import markdown
+import os
 
 app = Flask(__name__)
 
 STATUS = ["queued", "in_progress", "completed", "requires_action", "expired", "cancelling", "cancelled", "failed"]
+UPLOAD_FOLDER = './uploads'
 
 @app.route('/')
 def index():
@@ -12,7 +15,7 @@ def index():
 
 @app.route('/renew_message', methods=['POST'])
 def renew_message():
-    from openai import OpenAI
+    
     client = OpenAI()
 
     # assistantの作成
@@ -29,13 +32,33 @@ def renew_message():
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
+    # 添付ファイルがある場合は、ファイル名を取得
+    file_id = None
+    if request.files:
+        file = request.files['file']
+        filename = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(filename)
+        # ファイルを送信
+        file_id = send_file(filename)
+    
     user_input = request.form['message']
     # AIからの応答を取得
-    response = get_ai_response(user_input)
+    response = get_ai_response(user_input, file_id)
     return jsonify({'message': response})
 
-def get_ai_response(user_input):
-    from openai import OpenAI
+def send_file(filename):
+    client = OpenAI()
+    file = open(filename, "rb")
+    file_response = client.files.create(
+        file=file,
+        purpose="assistants"
+    )
+    print(file_response)
+    # ファイルの消去
+    os.remove(filename)
+    return file_response.id
+
+def get_ai_response(user_input, file_id):
     client = OpenAI()
 
     assistant_id = request.form['assistant_id']
@@ -45,11 +68,21 @@ def get_ai_response(user_input):
     # threadの作成
     thread = client.beta.threads.create()
 
-    message = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=user_input
-    )
+    # パラメーターを指定してthreadにメッセージを送信
+    message = None
+    if file_id == None:
+        message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=user_input
+        )
+    else:
+        message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=user_input,
+            file_ids=[file_id]
+        )
     print(message)
 
     # assistantとthreadのidを指定して実行
@@ -85,7 +118,7 @@ def get_ai_response(user_input):
     last_message = data[0]
 
     # last_messageから必要な情報を取得
-    last_value = last_message.content[0].text.value
+    last_value = markdown.markdown(last_message.content[0].text.value)
 
 
     return last_value

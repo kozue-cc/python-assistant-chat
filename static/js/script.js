@@ -3,6 +3,9 @@ document.getElementById('send-btn').addEventListener('click', function() {
     const message = inputElement.value;
     inputElement.value = '';
 
+    const fileInputElement = document.getElementById('file-input');
+    const file = fileInputElement.files[0];
+
     if (message) {
         // メッセージをチャットボックスに追加
         addMessageToChatBox('You', message);
@@ -10,9 +13,18 @@ document.getElementById('send-btn').addEventListener('click', function() {
         // サーバーにメッセージを送信し、応答を待つ
         currentAssistantID = localStorage.getItem('current_assistant_id');
         console.log(currentAssistantID);
+
+        //添付ファイルの取得と送信
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('assistant_id', currentAssistantID);
+        if (file) {
+            formData.append('file', file);
+        }
+
         fetch('/send_message', {
             method: 'POST',
-            body: new URLSearchParams({ 'message': message, 'assistant_id': currentAssistantID })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {

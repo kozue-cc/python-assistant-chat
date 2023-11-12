@@ -12,8 +12,13 @@
         <div id="chat-box">
             <!-- ここにメッセージが表示される -->
         </div>
-        <input type="text" id="chat-input" placeholder="メッセージを入力...">
-        <button id="send-btn">送信</button>
+        <textarea id="chat-input" placeholder="メッセージを入力..."></textarea>
+        <div id="send-box">
+            <label for="file-btn">
+                <input type="file" name="file" id="file-input">
+            </label>
+            <button id="send-btn">送信</button>
+        </div>
     </div>
     <script src="/static/js/script.js"></script>
 </body>

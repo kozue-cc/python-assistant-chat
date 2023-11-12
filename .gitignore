@@ -3,3 +3,6 @@
 
 # env file
 .env
+
+# for macOS
+.DS_Store
