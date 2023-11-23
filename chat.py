@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import markdown
 import os
+import requests
 
 app = Flask(__name__)
 
@@ -22,13 +23,14 @@ def renew_message():
     assistant = client.beta.assistants.create(
         instructions="あなたは日本文学の研究者です。ユーザーからアップロードされるファイルの内容をもとに、質問に回答してください。",
         name="文学研究者Chat",
-        tools=[{"type": "code_interpreter"}],
-        model="gpt-3.5-turbo-1106",
+        tools=[{"type": "retrieval"}],
+        model="gpt-4-1106-preview",
     )   
     print(assistant)
 
     return jsonify({'message': 'renewed', 'assistant_id': assistant.id})
     
+@app.route('/assistants', methods=['POST'])
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
@@ -122,6 +124,22 @@ def get_ai_response(user_input, file_id):
 
 
     return last_value
+
+def fetch_and_display_data(assistant_id):
+    endpoint = "https://api.openai.com/v1/assistants/"
+    try:
+        response = requests.get(endpoint + assistant_id)
+        data = response.json()
+
+        # Extract values from the response
+        name = data.get("name")
+        model = data.get("model")
+        instructions = data.get("instructions")
+
+        # Display the extracted values
+        return jsonify({'Name': name, 'Model': model, 'Instructions': instructions})
+    except Exception as e:
+        print("Error fetching data:", e)
 
 if __name__ == '__main__':
     app.run(debug=True)

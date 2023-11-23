@@ -1,17 +1,29 @@
+"""
+This script contains a Flask web application that uses OpenAI's GPT-4 model to provide customer support.
+The application allows users to send messages and files to the AI assistant, which responds with relevant information.
+The application also includes a function called getFAQContest that returns FAQ content in response to customer inquiries about products.
+"""
 from time import sleep
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import markdown
 import os
 
+UPLOAD_FOLDER = './uploads'
+
 app = Flask(__name__)
 
-STATUS = ["queued", "in_progress", "completed", "requires_action", "expired", "cancelling", "cancelled", "failed"]
-UPLOAD_FOLDER = './uploads'
 
 @app.route('/')
 def index():
-    return render_template('chat.html')  # LINE風のデザインをしたHTMLファイル
+    """
+    Renders the chat.html file with LINE-style design.
+
+    Returns:
+        The rendered HTML template.
+    """
+    return render_template('chat.html')
+
 
 @app.route('/renew_message', methods=['POST'])
 def renew_message():
@@ -21,15 +33,48 @@ def renew_message():
     # assistantの作成
     assistant = client.beta.assistants.create(
         instructions="""
-        あなたはカスタマーサポートのオペレーターです。利用者から、具体的に困っていることを聞き出し、解決に努めてください。
-        問い合わせの解決には、以下の項目が必要となります。必ず利用者から聞き出してください。
-        ・対象製品
-        ・利用環境(デバイス、ブラウザ、アプリのバージョン)
-        ・どのような問題が発生しているのか
-        聞き取りをした後で、自身の理解で正しいかを顧客に確認したのち、以下のfunctionを利用して、利用者の質問に回答してください。
+        あなたはhoge株式会社のカスタマーサポートの優秀なオペレーターです。オペレーターとして、顧客と会話しながら、以下の「問い合わせ情報」を聞き出してまとめてください。
+        また、まとめた後に顧客に自身の理解を説明し、「フォーマット」の書き方に沿ってまとめてください。
+        また、その内容で正しいかを顧客に確認してもらってください。
+        顧客と認識が合うまで会話をしてください。
+        顧客への質問は、一度のレスポンスで一つだけにしてください。
+        
+        ### 問い合わせ情報
+        問い合わせの内容：
+        　具体的なお問い合わせの内容です。特に、何にお困りなのかを明確にしてください。
+
+        発生した事象：
+        　以下のような内容を聞き出してください。
+        　・どのような操作をしていたか
+        　・どのような事象が発生したのか。
+        　・エラーメッセージが表示された場合は、その内容
+        　・発生した日時
+        　・発生の頻度
+
+        発生した環境：
+        　以下のような内容を聞き出してください。
+        　・OSの種類、バージョン
+        　・ブラウザの種類、バージョン
+
+        ご利用サービス：
+        　・管理画面
+        　・モバイルアプリ
+        　・利用者画面
+
+        いつまでに回答が欲しいか：
+        　・解決までの緊急度を判断できるように、この問い合わせをいつまでに解決したいのか確認してください。
+
+        ### フォーマット
+        顧客の回答を以下のフォーマットに沿ってまとめてください。
+        事象：{あなたがまとめた事象の内容}
+        利用環境：{あなたがまとめた利用環境の内容}
+        ご利用サービス：{あなたがまとめたご利用サービスの内容}
+        いつまでに回答が欲しいか：{あなたがまとめたいつまでに回答が欲しいかの内容}
+        発生日時：{あなたがまとめた発生日時の内容}
+        緊急度：{あなたがまとめた緊急度の内容}
         """,
         name="オペレーター",
-        model="gpt-4",
+        model="gpt-4-1106-preview",
         tools=[{
             "type": "function",
             "function": {
@@ -131,7 +176,6 @@ def get_ai_response(user_input, file_id):
         sleep(5)
     
     # requires_actionの場合は、actionを実行
-    messages_thread_id = thread.id
     if status == "requires_action":
         function_name = result.required_action.submit_tool_outputs.tool_calls[0].function.name
         call_id = result.required_action.submit_tool_outputs.tool_calls[0].id
